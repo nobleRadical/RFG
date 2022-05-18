@@ -1,0 +1,10 @@
+﻿{
+	"name": "RFG",
+	"version_number": "1.0.0",
+	"website_url": "",
+	"description": "Adds the Resonance Field Generator",
+	"dependencies": [
+		"bbepis-BepInExPack-5.4.9",
+		"RiskofThunder-HookGenPatcher-1.2.1"
+	]
+}

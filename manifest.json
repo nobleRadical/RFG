@@ -1,10 +1,11 @@
 ﻿{
-	"name": "RFG",
-	"version_number": "1.0.0",
+	"name": "Resonance_Field_Generator",
+	"version_number": "1.2.2",
 	"website_url": "",
-	"description": "Adds the Resonance Field Generator",
+	"description": "Adds a void shield generator that uses healing to decrease shield delay",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.9",
-		"RiskofThunder-HookGenPatcher-1.2.1"
+		"RiskofThunder-HookGenPatcher-1.2.1",
+		"tristanmcpherson-R2API-3.0.30"
 	]
 }

@@ -36,13 +36,13 @@ namespace RFGPlugin
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "nobleRadical";
         public const string PluginName = "RFGPlugin";
-        public const string PluginVersion = "1.2.2";
+        public const string PluginVersion = "1.2.3";
 
         //Plugin Info
         public static PluginInfo PInfo { get; private set; }
 
         //Config
-        public static ConfigEntry<bool> GameBalance { get; set; }
+        public static ConfigEntry<float> HealFactor { get; set; }
 
 
         //We need our item definition to persist through our functions, and therefore make it a class field.
@@ -51,9 +51,7 @@ namespace RFGPlugin
         //Constants
         
         private Color purple = new Color32(135, 0, 255, 255); //shield color
-        private const float shieldTradeRate = 0.04f; // how much shield is converted to health (percent)
-        private const float healFactor = 0.1f; //delay reduction per health point healed
-        private const float flatRechargeDelayDecrease = 0.1f; //after 'max stacks', how much recharge delay is decreased per stack.
+        /// private const float healFactor = 0.1f; //delay reduction per health point healed
 
 
         //The Awake() method is run at the very start when the game is initialized.
@@ -66,7 +64,7 @@ namespace RFGPlugin
             PInfo = Info;
 
             //config setup
-            GameBalance = Config.Bind<bool>("base", "balanced", false, "Should this item be balanced, or should it become broken after 30 stacks?");
+            HealFactor = Config.Bind<float>("base", "Healing Factor", 0.1f, "The amount that shield recharge delay is decreased for every health point healed.");
 
             //First let's define our item
             myItemDef = ScriptableObject.CreateInstance<ItemDef>();
@@ -112,9 +110,11 @@ namespace RFGPlugin
             //make it void.
             On.RoR2.Items.ContagiousItemManager.Init += (orig) =>
             {
-                ItemDef.Pair pair = new ItemDef.Pair();
-                pair.itemDef1 = RoR2Content.Items.PersonalShield;
-                pair.itemDef2 = myItemDef;
+                ItemDef.Pair pair = new ItemDef.Pair
+                {
+                    itemDef1 = RoR2Content.Items.PersonalShield,
+                    itemDef2 = myItemDef
+                };
                 ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem] = ItemCatalog.itemRelationships[DLC1Content.ItemRelationshipTypes.ContagiousItem].AddToArray(pair);
                 orig();
             };
@@ -126,38 +126,27 @@ namespace RFGPlugin
             {
                 if (self.inventory != null)
                 {
+                    //define inputs
                     int RFGcount = self.inventory.GetItemCount(myItemDef.itemIndex);
-                    int RFGcountMaxed = RFGcount; // fallback
-                    int extraRFGcount = 0;
-                    int max_count = (int)(1 / shieldTradeRate) - 1; //maximum amount of RFGs before health drain is 100%
-                    if (RFGcount > max_count)
+                    float health = self.maxHealth;
+                    float shield = self.maxShield;
+                    //define outputs
+                    float healthToSubtract = 0;
+                    float shieldToAdd = 0;
+                    //logic
+                    // add (8% per item) of health as shields.
+                    shieldToAdd = (0.08f * RFGcount) * health;
+                    // remove (4% per item) of health.
+                    healthToSubtract = (0.04f * RFGcount) * health;
+
+                    if (health - healthToSubtract < 1) // on the other hand, RFG shouldn't kill the player.
                     {
-                        RFGcountMaxed = max_count;
-                        extraRFGcount = RFGcount - max_count; //overflow
-                    }
+                        healthToSubtract = health - 1;
+                    } // if it would, we'll just add shields instead. (This might be later changed for balance reasons.
 
-                    if (RFGcount > 0)
-                    {
-
-                        float fakeMaxHealth = self.maxHealth / (1 + -shieldTradeRate * RFGcountMaxed); //max health without the RFG multiplicative modifiers
-                        args.baseShieldAdd += (float)Math.Floor(fakeMaxHealth * shieldTradeRate * (float)RFGcount); //add base shields
-
-                        if (self.inventory.GetItemCount(ItemCatalog.FindItemIndex("ShieldOnly")) == 0) // if we don't have trancendence
-                        {
-
-                            args.baseShieldAdd += (float)Math.Floor(fakeMaxHealth * shieldTradeRate * (float)RFGcountMaxed); //add 'extra' sheilds (traded out for health)
-
-                            args.healthMultAdd += -shieldTradeRate * RFGcountMaxed; //reduce health by base %
-                            
-                            if (!GameBalance.Value) // if gameBalance is false, start reducing the base shield recharge delay
-                            {
-                                if (self.outOfDangerStopwatch > 7f - (float)extraRFGcount * flatRechargeDelayDecrease)
-                                {
-                                    self.outOfDanger = true;
-                                }
-                            }
-                        }
-                    }
+                    //do operation
+                    args.baseHealthAdd += -(healthToSubtract);
+                    args.baseShieldAdd += shieldToAdd;
                 }
             };
             //decrease shield delay on heal; check for inventory and characterBody
@@ -171,7 +160,7 @@ namespace RFGPlugin
                         int RFGcount = character.inventory.GetItemCount(myItemDef.itemIndex);
                         if (RFGcount > 0 & nonRegen)
                         {
-                            character.outOfDangerStopwatch += healFactor * amt;
+                            character.outOfDangerStopwatch += HealFactor.Value * amt;
                         }
                     }
                 }
@@ -231,7 +220,7 @@ namespace RFGPlugin
             LanguageAPI.Add("RFG_PICKUP", "Trade health for a <style=cIsHealing>Regenerating Shield</style>. Recharge faster by healing. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
 
             //The Description is where you put the actual numbers and give an advanced description.
-            LanguageAPI.Add("RFG_DESC", $"Trade <style=cIsHealing>4%</style> <style=cStack>(+4% per stack)</style> health for <style=cIsHealing>8%</style> <style=cStack>(+8% per stack)</style> <style=cIsHealing>Regenerating Shield</style>. Each health point healed <style=cArtifact>Decreases recharge delay</style> by {healFactor} seconds. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
+            LanguageAPI.Add("RFG_DESC", $"Trade <style=cIsHealing>4%</style> <style=cStack>(+4% per stack)</style> health for <style=cIsHealing>8%</style> <style=cStack>(+8% per stack)</style> <style=cIsHealing>Regenerating Shield</style>. Each health point healed <style=cArtifact>Decreases recharge delay</style> by {HealFactor.Value} seconds. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
             
             //The Lore is, well, flavor. You can write pretty much whatever you want here.
             LanguageAPI.Add("RFG_LORE", @"It's interesting to see how the void...

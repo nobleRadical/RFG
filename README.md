@@ -12,6 +12,11 @@ P.S. if you're using this mod and it seems to be broken overpowered, that's not 
 
 
 ## Changelog
+
+-1.3.0 Added Transcendence Integration
+
+-1.2.3 Rewrite, Simplified Code
+
 -1.2.2: bugfix, math errors
 
 -1.2.1: bugfix

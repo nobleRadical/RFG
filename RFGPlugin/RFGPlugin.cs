@@ -36,7 +36,7 @@ namespace RFGPlugin
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "nobleRadical";
         public const string PluginName = "RFGPlugin";
-        public const string PluginVersion = "1.2.3";
+        public const string PluginVersion = "1.3.0";
 
         //Plugin Info
         public static PluginInfo PInfo { get; private set; }
@@ -142,7 +142,7 @@ namespace RFGPlugin
                     if (health - healthToSubtract < 1) // on the other hand, RFG shouldn't kill the player.
                     {
                         healthToSubtract = health - 1;
-                    } // if it would, we'll just add shields instead. (This might be later changed for balance reasons.
+                    } // if it would, we'll just add shields instead. (This might be later changed for balance reasons.)
 
                     //do operation
                     args.baseHealthAdd += -(healthToSubtract);
@@ -158,9 +158,14 @@ namespace RFGPlugin
                     if (character.inventory != null)
                     {
                         int RFGcount = character.inventory.GetItemCount(myItemDef.itemIndex);
+                        bool hasTranscendence = character.inventory.GetItemCount(ItemCatalog.FindItemIndex("ShieldOnly")) > 0;
                         if (RFGcount > 0 & nonRegen)
                         {
                             character.outOfDangerStopwatch += HealFactor.Value * amt;
+                        }
+                        if (hasTranscendence & character.outOfDanger)
+                        {
+                            self.CallCmdRechargeShieldFull();
                         }
                     }
                 }
@@ -220,7 +225,7 @@ namespace RFGPlugin
             LanguageAPI.Add("RFG_PICKUP", "Trade health for a <style=cIsHealing>Regenerating Shield</style>. Recharge faster by healing. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
 
             //The Description is where you put the actual numbers and give an advanced description.
-            LanguageAPI.Add("RFG_DESC", $"Trade <style=cIsHealing>4%</style> <style=cStack>(+4% per stack)</style> health for <style=cIsHealing>8%</style> <style=cStack>(+8% per stack)</style> <style=cIsHealing>Regenerating Shield</style>. Each health point healed <style=cArtifact>Decreases recharge delay</style> by {HealFactor.Value} seconds. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
+            LanguageAPI.Add("RFG_DESC", $"Trade <style=cIsHealing>4%</style> <style=cStack>(+4% per stack)</style> health for <style=cIsHealing>8%</style> <style=cStack>(+8% per stack)</style> <style=cIsHealing>Regenerating Shield</style>. Each health point healed <style=cArtifact>Decreases recharge delay</style> by {HealFactor.Value} seconds. If Transcendence is active, healing while recharging shield fully recharges it. <style=cIsVoid>Corrupts all Personal Shield Generators.</style>");
             
             //The Lore is, well, flavor. You can write pretty much whatever you want here.
             LanguageAPI.Add("RFG_LORE", @"It's interesting to see how the void...

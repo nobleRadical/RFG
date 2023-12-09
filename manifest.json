@@ -1,6 +1,6 @@
 ﻿{
 	"name": "Resonance_Field_Generator",
-	"version_number": "1.2.2",
+	"version_number": "1.3.0",
 	"website_url": "",
 	"description": "Adds a void shield generator that uses healing to decrease shield delay",
 	"dependencies": [

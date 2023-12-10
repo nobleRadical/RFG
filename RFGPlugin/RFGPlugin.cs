@@ -36,7 +36,7 @@ namespace RFGPlugin
         public const string PluginGUID = PluginAuthor + "." + PluginName;
         public const string PluginAuthor = "nobleRadical";
         public const string PluginName = "RFGPlugin";
-        public const string PluginVersion = "1.3.0";
+        public const string PluginVersion = "1.3.1";
 
         //Plugin Info
         public static PluginInfo PInfo { get; private set; }
@@ -80,6 +80,7 @@ namespace RFGPlugin
             //Tier1=white, Tier2=green, Tier3=red, Lunar=Lunar, Boss=yellow,
             //and finally NoTier is generally used for helper items, like the tonic affliction
             myItemDef.deprecatedTier = ItemTier.VoidTier1;
+            /// myItemDef.tier = DLC1Content.Items.BearVoid.tier;
             myItemDef.tags = new ItemTag[1] { ItemTag.Utility };
 
             Assets.Init();
@@ -158,7 +159,7 @@ namespace RFGPlugin
                     if (character.inventory != null)
                     {
                         int RFGcount = character.inventory.GetItemCount(myItemDef.itemIndex);
-                        bool hasTranscendence = character.inventory.GetItemCount(ItemCatalog.FindItemIndex("ShieldOnly")) > 0;
+                        bool hasTranscendence = character.inventory.GetItemCount(RoR2Content.Items.ShieldOnly.itemIndex) > 0;
                         if (RFGcount > 0 & nonRegen)
                         {
                             character.outOfDangerStopwatch += HealFactor.Value * amt;

@@ -79,8 +79,7 @@ namespace RFGPlugin
             //The tier determines what rarity the item is:
             //Tier1=white, Tier2=green, Tier3=red, Lunar=Lunar, Boss=yellow,
             //and finally NoTier is generally used for helper items, like the tonic affliction
-            myItemDef.deprecatedTier = ItemTier.VoidTier1;
-            /// myItemDef.tier = DLC1Content.Items.BearVoid.tier;
+            myItemDef.tier = ItemTier.VoidTier1;
             myItemDef.tags = new ItemTag[1] { ItemTag.Utility };
 
             Assets.Init();

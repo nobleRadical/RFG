@@ -2,6 +2,7 @@
 Shields. They're cool. But sometimes, they're a liability to pick up; your healing items become useless, and if you take damage all the time a portion of your health is basically gone permanently.
 I've introduced a void counterpart to personal shield generators that use healing to decrease your shield recharge delay.
 
+
 Thanks to the modding discord for making this mod possible, and my friends for brainstorming and revising the ideas.
 
 ## Contact
@@ -12,6 +13,7 @@ P.S. if you're using this mod and it seems to be broken overpowered, that's not 
 
 
 ## Changelog
+-1.3.1 Fixed Crash
 
 -1.3.0 Added Transcendence Integration
 
